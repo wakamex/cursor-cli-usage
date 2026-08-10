@@ -1,0 +1,24 @@
+[project]
+name = "cursor-usage"
+version = "0.1.0"
+description = "Cursor account usage and quota monitor"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cursor_usage"]
+
+[project.urls]
+Homepage = "https://github.com/wakamex/cursor-usage"
+Source = "https://github.com/wakamex/cursor-usage"
+
+[project.scripts]
+cursor-usage = "cursor_usage:main"
