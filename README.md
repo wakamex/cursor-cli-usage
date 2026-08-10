@@ -6,7 +6,7 @@ interface as the other `/code/*usage` tools.
 ## Install
 
 ```bash
-uv tool install cursor-usage
+uv tool install cursor-cli-usage
 ```
 
 For local development:

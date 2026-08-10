@@ -1,5 +1,5 @@
 [project]
-name = "cursor-usage"
+name = "cursor-cli-usage"
 version = "0.1.0"
 description = "Cursor account usage and quota monitor"
 readme = "README.md"
