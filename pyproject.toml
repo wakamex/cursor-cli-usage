@@ -14,11 +14,11 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/cursor_usage"]
+packages = ["src/cursor_cli_usage"]
 
 [project.urls]
-Homepage = "https://github.com/wakamex/cursor-usage"
-Source = "https://github.com/wakamex/cursor-usage"
+Homepage = "https://github.com/wakamex/cursor-cli-usage"
+Source = "https://github.com/wakamex/cursor-cli-usage"
 
 [project.scripts]
-cursor-usage = "cursor_usage:main"
+cursor-cli-usage = "cursor_cli_usage:main"

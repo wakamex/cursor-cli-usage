@@ -1,4 +1,4 @@
-# cursor-usage
+# cursor-cli-usage
 
 Cursor account usage and quota monitor. It follows the same dependency-free
 interface as the other `/code/*usage` tools.
@@ -19,13 +19,13 @@ uv tool install .
 
 | Command | Description |
 | --- | --- |
-| `cursor-usage` | Show current account usage |
-| `cursor-usage status` | Same as above |
-| `cursor-usage json` | Print normalized JSON |
-| `cursor-usage statusline` | Print compact cached output |
-| `cursor-usage refresh` | Refresh the cache and print status |
-| `cursor-usage daemon [-i SECS]` | Keep the cache fresh |
-| `cursor-usage install` | Print installation instructions |
+| `cursor-cli-usage` | Show current account usage |
+| `cursor-cli-usage status` | Same as above |
+| `cursor-cli-usage json` | Print normalized JSON |
+| `cursor-cli-usage statusline` | Print compact cached output |
+| `cursor-cli-usage refresh` | Refresh the cache and print status |
+| `cursor-cli-usage daemon [-i SECS]` | Keep the cache fresh |
+| `cursor-cli-usage install` | Print installation instructions |
 
 ## Authentication and data
 

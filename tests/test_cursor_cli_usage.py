@@ -8,7 +8,7 @@ import urllib.error
 from pathlib import Path
 from unittest import mock
 
-import cursor_usage
+import cursor_cli_usage as cursor_usage
 
 
 class FakeResponse:
