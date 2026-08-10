@@ -310,7 +310,9 @@ def cmd_daemon(args: argparse.Namespace) -> None:
 
 
 def cmd_install(_args: argparse.Namespace) -> None:
-    print("Install with:\n  uv tool install cursor-cli-usage\n\nThen run:\n  cursor-usage")
+    print(
+        "Install with:\n  uv tool install cursor-cli-usage\n\nThen run:\n  cursor-usage"
+    )
 
 
 def _build_parser() -> argparse.ArgumentParser:
