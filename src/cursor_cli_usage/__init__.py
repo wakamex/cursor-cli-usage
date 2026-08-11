@@ -7,8 +7,10 @@ import argparse
 import json
 import os
 import platform
+import shutil
 import signal
 import sqlite3
+import subprocess
 import sys
 import tempfile
 import time
@@ -80,11 +82,45 @@ def get_usage_file() -> Path:
     return Path(override).expanduser() if override else DEFAULT_USAGE_FILE
 
 
-def get_access_token() -> str:
-    """Read the current access token without refreshing or modifying Cursor state."""
+def _find_cursor_cli() -> str | None:
+    override = os.environ.get("CURSOR_USAGE_AGENT")
+    if override:
+        return str(Path(override).expanduser())
+    for name in ("agent", "cursor-agent"):
+        if executable := shutil.which(name):
+            return executable
+    return None
+
+
+def _get_cli_access_token() -> str | None:
+    executable = _find_cursor_cli()
+    if not executable:
+        return None
+    try:
+        result = subprocess.run(
+            [executable, "status", "--format", "json"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode:
+        return None
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return None
+    auth = payload.get("auth") if isinstance(payload, dict) else None
+    token = auth.get("accessToken") if isinstance(auth, dict) else None
+    return token if isinstance(token, str) and token else None
+
+
+def _get_ide_access_token() -> str | None:
     path = get_state_db()
     if not path.is_file():
-        raise RuntimeError(f"Cursor state database not found at {path}")
+        return None
     try:
         connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
         try:
@@ -96,9 +132,18 @@ def get_access_token() -> str:
             connection.close()
     except sqlite3.Error as exc:
         raise RuntimeError(f"Could not read Cursor authentication from {path}") from exc
-    if not row or not isinstance(row[0], str) or not row[0]:
-        raise RuntimeError("Cursor is not logged in")
-    return row[0]
+    return row[0] if row and isinstance(row[0], str) and row[0] else None
+
+
+def get_access_token() -> str:
+    """Read the current access token without refreshing or modifying Cursor state."""
+    if token := _get_cli_access_token():
+        return token
+    if token := _get_ide_access_token():
+        return token
+    raise RuntimeError(
+        "Cursor CLI is not logged in and no Cursor IDE session was found"
+    )
 
 
 def _number(value: object) -> int | float | None:

@@ -43,8 +43,41 @@ class CursorUsageTests(unittest.TestCase):
             with mock.patch.dict(
                 cursor_usage.os.environ, {"CURSOR_USAGE_STATE_DB": str(database)}
             ):
-                self.assertEqual(cursor_usage.get_access_token(), "local-token")
+                with mock.patch.object(
+                    cursor_usage, "_get_cli_access_token", return_value=None
+                ):
+                    self.assertEqual(cursor_usage.get_access_token(), "local-token")
             self.assertEqual(database.read_bytes(), before)
+
+    def test_cli_status_is_preferred_and_only_access_token_is_returned(self):
+        completed = mock.Mock(
+            returncode=0,
+            stdout=json.dumps(
+                {
+                    "authenticated": True,
+                    "auth": {
+                        "accessToken": "cli-access",
+                        "refreshToken": "must-not-be-returned",
+                    },
+                }
+            ),
+        )
+        with (
+            mock.patch.object(cursor_usage, "_find_cursor_cli", return_value="agent"),
+            mock.patch.object(
+                cursor_usage.subprocess, "run", return_value=completed
+            ) as run,
+            mock.patch.object(cursor_usage, "_get_ide_access_token") as ide,
+        ):
+            self.assertEqual(cursor_usage.get_access_token(), "cli-access")
+        run.assert_called_once_with(
+            ["agent", "status", "--format", "json"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        ide.assert_not_called()
 
     def test_fetch_uses_bearer_token_and_connect_protocol(self):
         payload = {"planUsage": {"limit": 2000, "used": 500, "totalPercentUsed": 25}}

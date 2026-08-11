@@ -1,7 +1,7 @@
 [project]
 name = "cursor-cli-usage"
 version = "0.1.0"
-description = "Cursor account usage and quota monitor"
+description = "Cursor CLI account quota monitor using local Cursor authentication"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
