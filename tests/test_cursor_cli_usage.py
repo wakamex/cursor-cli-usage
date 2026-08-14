@@ -130,6 +130,23 @@ class CursorUsageTests(unittest.TestCase):
         self.assertEqual(data["spend_limit_usage"]["used"], 100)
         self.assertEqual(data["auto_models"], ["auto"])
 
+    def test_missing_plan_usage_is_unavailable(self):
+        with mock.patch.object(cursor_usage, "fetch_usage", return_value={}):
+            data = cursor_usage.build_usage_json()
+        self.assertEqual(data["status"], "unavailable")
+        self.assertIn("plan usage", data["error"])
+
+    def test_nonfinite_usage_is_unavailable(self):
+        for value in (float("nan"), "Infinity"):
+            with self.subTest(value=value):
+                payload = {"planUsage": {"totalPercentUsed": value}}
+                with mock.patch.object(
+                    cursor_usage, "fetch_usage", return_value=payload
+                ):
+                    data = cursor_usage.build_usage_json()
+                self.assertEqual(data["status"], "unavailable")
+                json.dumps(data, allow_nan=False)
+
     def test_unauthorized_never_attempts_refresh(self):
         error = urllib.error.HTTPError(cursor_usage.USAGE_URL, 401, "", {}, None)
         with (

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import platform
 import shutil
@@ -151,30 +152,41 @@ def get_access_token() -> str:
 def _number(value: object) -> int | float | None:
     if isinstance(value, bool):
         return None
-    if isinstance(value, int | float):
+    if isinstance(value, int):
         return value
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
     if isinstance(value, str):
         try:
             parsed = float(value)
         except ValueError:
+            return None
+        if not math.isfinite(parsed):
             return None
         return int(parsed) if parsed.is_integer() else parsed
     return None
 
 
 def _usage_bucket(value: object) -> dict | None:
-    if not isinstance(value, dict):
+    if value is None:
         return None
-    return {
-        key: parsed
-        for key, source in (
-            ("limit", "limit"),
-            ("used", "used"),
-            ("remaining", "remaining"),
-            ("percent_used", "totalPercentUsed"),
-        )
-        if (parsed := _number(value.get(source))) is not None
-    }
+    if not isinstance(value, dict):
+        raise RuntimeError("Cursor usage response contained invalid usage data")
+    bucket = {}
+    for key, source in (
+        ("limit", "limit"),
+        ("used", "used"),
+        ("remaining", "remaining"),
+        ("percent_used", "totalPercentUsed"),
+    ):
+        raw = value.get(source)
+        if raw is None:
+            continue
+        parsed = _number(raw)
+        if parsed is None:
+            raise RuntimeError("Cursor usage response contained invalid numeric usage")
+        bucket[key] = parsed
+    return bucket
 
 
 def fetch_usage() -> dict:
@@ -210,12 +222,15 @@ def fetch_usage() -> dict:
 
 def _normalize(payload: dict) -> dict:
     models = payload.get("autoBucketModels")
+    plan_usage = _usage_bucket(payload.get("planUsage"))
+    if not plan_usage or plan_usage.get("percent_used") is None:
+        raise RuntimeError("Cursor usage response did not contain plan usage")
     return {
         "billing_cycle": {
             "start": payload.get("billingCycleStart"),
             "end": payload.get("billingCycleEnd"),
         },
-        "plan_usage": _usage_bucket(payload.get("planUsage")),
+        "plan_usage": plan_usage,
         "spend_limit_usage": _usage_bucket(payload.get("spendLimitUsage")),
         "auto_models": models if isinstance(models, list) else [],
     }
