@@ -74,7 +74,9 @@ def get_state_db() -> Path:
     if platform.system() == "Windows":
         app_data = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming"))
         return app_data / "Cursor" / "User" / "globalStorage" / "state.vscdb"
-    return Path.home() / ".config" / "Cursor" / "User" / "globalStorage" / "state.vscdb"
+    config_home = os.environ.get("XDG_CONFIG_HOME")
+    base = Path(config_home).expanduser() if config_home else Path.home() / ".config"
+    return base / "Cursor" / "User" / "globalStorage" / "state.vscdb"
 
 
 def get_usage_file() -> Path:

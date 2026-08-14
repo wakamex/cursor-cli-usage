@@ -26,6 +26,25 @@ class FakeResponse:
 
 
 class CursorUsageTests(unittest.TestCase):
+    def test_linux_state_database_follows_xdg_config_home(self):
+        with (
+            tempfile.TemporaryDirectory() as temporary,
+            mock.patch.dict(
+                cursor_usage.os.environ,
+                {"XDG_CONFIG_HOME": temporary},
+                clear=True,
+            ),
+            mock.patch.object(cursor_usage.platform, "system", return_value="Linux"),
+        ):
+            self.assertEqual(
+                cursor_usage.get_state_db(),
+                Path(temporary)
+                / "Cursor"
+                / "User"
+                / "globalStorage"
+                / "state.vscdb",
+            )
+
     def test_access_token_is_read_from_database_without_writes(self):
         with tempfile.TemporaryDirectory() as temporary:
             database = Path(temporary) / "state.vscdb"

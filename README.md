@@ -50,9 +50,9 @@ uv tool install .
 For every live request, the tool first asks the installed Cursor CLI for its
 current authentication state with `agent status --format json`. If the CLI is
 unavailable, it falls back to `cursorAuth/accessToken` in Cursor IDE's local
-`state.vscdb`. It sends only the current access token to Cursor's dashboard
-usage service. It never refreshes, rotates, or modifies Cursor-owned
-credentials.
+`state.vscdb`. On Linux, the fallback follows `XDG_CONFIG_HOME` when it is set.
+It sends only the current access token to Cursor's dashboard usage service. It
+never refreshes, rotates, or modifies Cursor-owned credentials.
 
 The normalized JSON includes:
 
